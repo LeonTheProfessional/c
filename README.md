@@ -7,4 +7,4 @@
 
 C Primer Plus, Fifth Edition
 
-[C Primer Plus Note](c_primer_plus_note.md)
+[C Primer Plus Note](C_Primer_Plus/c_primer_plus_note.md)
