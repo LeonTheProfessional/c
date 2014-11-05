@@ -715,4 +715,210 @@
 
 5. **C99**支持结构的指定初始化项目，使用点运算符和成员名（而不是方括号和索引值）来标识具体的元素。可按照任意的顺序使用指定初始化项目。
  
- ### 3. 结构数组
+### 3. 结构数组
+
+```
+while (getchar() != '\n')
+{//清空输入行
+	continue;
+}
+```
+
+### 4. 向函数传递结构信息
+
+1. C允许把一个结构A赋值给另一个结构B，`B = A;`会使B的每个成员都被赋成A相应成员的值，即使有个成员是一个数组也照样完成赋值。
+
+2. 应该用结构指针作为函数参数，还是用结构作为函数参数和返回值呢？
+	- 把结构指针作为参数：执行速度快，只须传递一个单个地址；缺点是缺少对数据的保护，被调函数中的一些操作可能影响到原来结构中的数据（可以通过**const**限定词来解决这个问题）。
+	- 把结构作为参数：函数处理的是原始数据的副本。但是如果把很大的结构传递给函数，函数只使用了一个或两个结构成员，浪费时间和空间（此时，传递结构指针更为合理）。
+
+	注：通常为了提高效率而使用结构指针作为函数参数，当需要保护数据、防止意外改变数据时对结构指针使用**const**限定词。传递结构值是处理小型结构最常用的方法。
+
+3. 在结构中使用字符数组还是字符指针？
+	```
+	#define LEN 20
+	struct names
+	{
+		char first[LEN];
+		char last[LEN];
+	};
+	struct pnames
+	{
+		char * first;
+		char * last;
+	};
+	//对于如下代码均可正常运行
+	struct names veep = {"Talia", "Summers"};
+	struct pnames treas = {"Brad", "Fallingjaw"};
+	printf("%s and %s\n", veep.first, treas.first);
+	//但是对于如下代码则不能正常运行，会出现指针未初始化错误
+	struct names accountant;
+	struct pnames attorney;
+	puts("Enter the last name of your accountant:");
+	scanf("%s", accountant.last);
+	puts("Enter the last name of your attorney:");
+	scanf("%s", attorney.last);//attorney.last指针未初始化	
+	```
+如果需要一个结构来存储字符串，应使用字符数组成员，或者使用**malloc()**动态分配内存。
+
+4. 复合文字和结构
+	- 使用复合文字给结构变量赋值：
+	```
+	struct book readfirst = 
+		(struct book){
+			"Crime and Punishment",
+			"Fyodor Dostoyevsky",
+			9.99 };
+	```
+	- 把复合文字作为函数参数：
+	```
+	struct rect
+	{
+		double x;
+		double y;
+	};
+	double rect_area(struct rect r)
+	{
+		return r.x * r.y;
+	}
+	double area;
+	area = rect_area((struct rect){10.5, 20.0});
+	```
+	- 把复合文字的地址传递给函数：
+	```
+	double rect_areap(struct rect * rp)
+	{
+		return rp->x * rp->y;
+	}
+	double area;
+	area = rect_areap(&(struct rect){10.5, 20.0});
+	```
+	- 也可以在复合文字中使用指定初始化项目
+
+5. 伸缩型数组成员（**C99**）
+	- 利用这一特性可以声明最后一个成员是一个具有特殊属性的数组的结构：
+(1)该数组成员不存在，至少不立即存在；
+(2)可以编写适当的代码使用这个伸缩型数组成员，就像它确实存在并且拥有需要的任何数目的元素一样；
+	- 声明一个伸缩型数组成员的规则：
+		- 伸缩型数组成员必须是最后一个数组成员；
+		- 结构中必须至少有一个其他成员；
+		- 伸缩型数组就像普通数组一样被声明，除了它的方括号内是空的；
+	```
+	struct flex
+	{
+		int count;
+		double average;
+		double scores[];
+	};
+	```
+	- **C99**的意图并不是声明一个**struct flex**类型的变量，而是声明一个指向**struct flex**类型的指针，然后使用**malloc()**分配足够的空间，以存放**struct flex**结构的常规内容和伸缩型数组成员需要的任何额外空间。例如，假设想用**scores**表示含有5个**double**型数值的数组，可以使用如下方法：
+	```
+	struct flex * pf;
+	pf = malloc(sizeof(struct flex) + 5 * sizeof(double));
+	……
+	struct flex * pf1, pf2;
+	int n = 5;
+	pf1 = malloc(sizeof(struct flex) + n * sizeof(double));
+	n = 9;
+	pf2 = malloc(sizeof(struct flex) + n * sizeof(double));
+	```
+6. 把结构内容保存到文件：
+最没效率的保存方法是使用**fprintf()**，一个更好的解决方法是使用**fread()**和**fwrite()**函数以结构体的大小为单元进行读写。如：
+	```
+	fwrite(&primer, sizeof(struct book), 1, pbooks);
+	```
+
+### 5. 联合（**union**）
+
+1. 联合是一种能在同一个存储空间里（但不同时）存储不同类型数据的数据类型。如：
+	```
+	union hold
+	{
+		int digit;
+		double bigfl;
+		char letter;
+	};
+	//这个联合体可以含有一个int型数值或一个double型数值或一个char型数值；	
+	```
+	
+2. 即使有足够的空间，联合体也只存储一个值，初始化规则有3种：
+	- 把一个联合体初始化为同样类型的另一个联合体；
+	- 初始化联合体的第一个元素；
+	- 使用一个指定初始化项目；
+
+	```
+	union hold valA;
+	valA.letter = 'R';
+	union hold valB = valA;
+	union hold valC = {88};
+	union hold valD = {.bigfl = 118.2};
+	//点运算符表示正在使用哪种数据类型
+	```
+	
+### 6. 枚举（**enum**） 
+
+1. 可以使用枚举类型声明代表整数常量的符号名称。目的是提高程序可读性。
+	```
+	enum day = {Sun, Mon, Tue, Wed, Thu, Fri, Sat};
+	```
+	
+	注：C的某些枚举属性不能延至C++中，例如，C允许对枚举变量使用运算符++，而C++不允许。
+
+2. 在使用整数常量的任何地方都能使用枚举常量。枚举列表中的常量默认被指定为整数值0、1、2等，也可以指定枚举常量具有的整数值。枚举类型是一个整数类型。
+
+3. 共享的命名空间
+	- 普通变量的命名空间相同但是具有不同作用域的两个变量不会冲突，而命名空间相同并在相同作用域中的两个变量会冲突。命名空间是分类别的。
+	- 对于**C**，在一个特定作用域内的结构标记、联合标记以及枚举标记都共享同一个命名空间，但是与普通变量不同，可以在同一个作用域内对一个变量和一个标记使用同一个名字，但是不会产生错误；但是不能在同一作用域内使用名字相同的两个标记或名字相同的两个变量。
+	注：C++不允许在同一个作用域内对一个变量和一个标记使用同一个名字，应避免这种写法。
+
+### 7. **typedef**
+
+1. 与**#define**的三个不同点：
+	- **typedef**给出的符号名称仅限于对类型，而不是对值；
+	- **typedef**由编译器解释，而不是预处理器；
+	- 在一定范围内，**typedef**比**#define**更灵活。
+
+2. 使用**typedef**来命名一个结构类型时，可以省去结构的名字：
+	```
+	typedef struct 
+	{
+		double x;
+		double y;
+	} rect;
+	rect r1 = {3.0, 6.0};
+	rect r2;
+	r2 = r1;
+	//这被翻译成：
+	struct {double x; double y} r1 = {3.0, 6.0};
+	struct {double x; double y} r2;
+	r2 = r1;
+	```
+	注：如果两个结构的声明都不使用标记，但是使用同样的成员（成员名和类型都匹配），C认为这两个结构具有同样的类型，可以互相赋值。
+
+3.  修饰符的顺序
+	- **[]**和**()**具有相同的优先级，且优先级高于*****的优先级；
+	- **[]**和**()**从左至右结合；
+	
+	```
+	int * risks[10];//具有10个元素的数组，每个元素是一个指向int的指针
+	int (* risks) [10];//一个指针，指向具有10个元素的int数组
+	```
+
+### 8. 函数和指针
+
+1. 声明一个指向特定函数类型的指针时，首先声明一个该类型的函数，然后用**(*pf)**形式的表达式替换函数名称即可。
+
+2. 函数指针最常用作函数的参数。
+
+3. 使用**typedef**：
+	```
+	typedef void (*V_FP_CHARP) (char *);
+	void show (V_FP_CHARP fp, char *);
+	V_FP_CAHRP pfun;
+	```
+	还可以声明并初始化一个函数指针的数组：
+	V_FP_CHARP arpf[4] = { ToUpper, ToLower, Transpose, Dummy};
+
+## 第15章 位操作
+
+### 1. 
