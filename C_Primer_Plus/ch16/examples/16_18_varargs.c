@@ -27,12 +27,12 @@ double sum(int lim, ...)
     va_list ap; //声明用于存放参数的变量
     double tot = 0;
     int i;
-    va_start(ap, lim);
+    va_start(ap, lim); //把ap初始化为参数列表
     for (i = 0; i < lim; i++)
     {
-        tot += va_arg(ap, double);
+        tot += va_arg(ap, double);//访问参数列表中的每一个项目
     }
-    va_end(ap);
+    va_end(ap);//清理工作
     
     return tot;
 }
