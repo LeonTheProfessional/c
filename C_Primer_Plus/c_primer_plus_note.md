@@ -921,4 +921,686 @@ while (getchar() != '\n')
 
 ## 第15章 位操作
 
-### 1. 
+### 1. C的位运算符
+
+1. 位逻辑运算符	
+	- 按位取反：**~**
+	- 按位与：**&**
+	```
+	val &= 0377;
+	//等价于
+	val = val & 0377;
+	```
+	- 按位或：**|**
+	- 按位异或：**^**
+
+2. 掩码
+掩码是某些位设为开**(1)**而某些位设置为关**(0)**的位组合。使用按位与操作。如：设置掩码**MASK**为2，即二进制**00000010**，**`flags = flags & MASK;`**
+
+3. 打开位
+使用按位或来实现。**`flags = flags | MASK;`**
+
+4. 关闭位
+**`flags = flags & ~MASK;`**
+
+5. 转置位
+转置一个位表示如果该位打开，则关闭该位；如果该位关闭，则打开该位。可以使用按位异或来实现转置一个位。如：**`flags = flag ^ MASK;`**对应掩码位为1的位被转置，对应掩码位为0的位不改变。
+
+6. 查看一个位的值
+如：**`if ((flag & MASK) == MASK)`**，位掩码至少应该与其所屏蔽的值具有相同的宽度。
+
+7. 移位运算符
+	- 左移运算符**<<**：空出的位用0填充，并且丢弃移出左侧操作数末端的位。
+	注：该操作产生一个新位值，但是不改变其操作数。
+	- 右移运算符**>>**：丢弃移出左侧操作数右端的位。对于**unsigned**类型，使用0填充左端空出的位；对于有符号类型，解雇依赖于及其，空出的位可能用0填充，或者使用符号位的副本填充。
+
+8. 用法：移位运算符
+移位运算符能够提供快捷、高效的对2的幂的乘法和除法。
+	- **number << n**：number乘以2的n次幂；
+	- **number >> n**：如果number非负，则用number除以2的n次幂；
+
+
+### 2. 位字段
+
+1. 位字段是一个signed int或unsigned int中一组相邻的位。位字段由一个结构声明建立，该结构声明为每个字段提供标签，并决定字段的宽度。带有位字段的结构允许在单个单元中存储多项设置。如：
+	```
+	struct 
+	{
+		unsigned int autfd: 1;
+		unsigned int bldfc: 1;
+		unsigned int undln: 1;
+		unsigned int itals: １;
+	} prnt;
+	//使用：
+	prnt.itals = 0;
+	prnt.undln = 1;
+	//对于某个设置有两个以上选择，可以用多位来表示所有的选择
+	struct
+	{
+		unsigned int code1: 2;
+		unsigned int code2: 2;
+		unsigned int code3: 8;
+	} prcode;
+	//使用：
+	prcode.code1 = 0;
+	prcode.code2 = 3;
+	prcode.code3 = 102;//只需确保值没有超出字段的容量	
+	```
+
+2. 如果声明的总位数超过一个unsigned int大小，将使用下一个unsigned int存储位置，不允许一个字段跨越两个unsigned int之间的边界。编译器会自动移位一个这样的字段定义，使字段按unsigned int边界对齐。发生这种情况时，会在第一个unsigned int中留下一个未命名的洞，可以使用未命名的字段宽度“填充”未命名的洞。如：
+	```
+	//使用一个宽度为0的未命名的字段迫使下一个字段与下一个整数对齐
+	struct
+	{
+		unsigned int field1: 1;
+		unsigned int       : 2;
+		unsigned int field2: 1;
+		unsigned int       : 0;
+		unsigned int field3: 1;
+	} stuff;
+	```
+注：C使用unsigned int作为位字段结构的基本布局单元。
+
+## 第16章 C预处理器和C库
+
+### 1. 翻译程序的第一步
+
+1. 对程序做预处理前，编译器会对它进行几次翻译处理。
+	- 编译器首先把源代码中出现的字符映射到源字符集；
+	- 编译器查找反斜线后紧跟换行符的实例并删除这些实例，将多个物理行转换为一个逻辑行（“换行符”代表按下回车键在源代码文件中新起一行所产生的字符，而不是字符**\n**所代表的字符）；
+	- 编译器将文本划分成预处理的语言符号序列和空白字符及注释序列，编译器用一个空格字符代替每一个注释。C实现可能还会选用单个空格代替每一个空白字符（不包括换行符）序列。
+	- 最后，程序进入预处理阶段。预处理寻找可能存在的预处理指令（这些指令由一行开始处的**#**符号标识）。
+
+### 2. 明显常量：#define
+
+1. 预处理器指令从**#**开始，到其后第一个换行符为止，指令的长度仅限于一个逻辑行。可以通过反斜线**"\"**把指令扩展到多个物理行（第二行要左对齐）。
+
+2. 每个#define行由三部分组成。
+	- 指令#define自身；
+	- 所选择的缩略语，即宏；
+	- 替换列表（主体）；
+
+3. 从宏变成最终的替换文本的过程称为宏展开。可以使用标准的C注释方法在#define行中进行注释，在预处理器处理之前，每个注释都会被一个空格所代替。
+
+4. 预处理器不进行计算，只是按照指令进行文字替换操作，C编译器在编译时对所有常量表达式求值。
+
+5. 一般而言，预处理器发现程序中的宏后，会用它的等价替换文本代替宏。如果该字符串中还包括宏，则继续替换这些宏。但是双引号中的宏不作替换。
+	```
+	#define OW "Hello World!"
+	printf("TWO: OW");
+	//将打印出TWO: OW，而不是打印出TWO: Hello World!
+	```
+	
+6. 宏常量可以用来指定标准数组的大小并作为const值的初始化值。
+	```
+	#define LIMIT 20
+	const int LIM = 50;
+	static int data1[LIMIT];//合法
+	static int data2[LIM];//无效
+	const int LIM2 = 2 * LIMIT;//合法
+	const int LIM3 = 2 * LIM;//无效
+	```
+
+7. 语言符号：
+C预处理器中的语言符号是宏定义主体中的单独的词。用空白符把这些词分开。	
+	
+	```
+	#define FOUR 2*2
+	//有一个语言符号：即序列2*2
+	#define FOUR 2 * 2
+	//有三个语言符号：2、*和3
+	```
+
+8. 重定义常量：
+ANSI标准只允许新定义与旧定义完全相同。相同定义意味着主体具有相同顺序的语言符号。
+	
+	```
+	//下面两个定义相同
+	#define SIX 2 * 3
+	#define SIX 2  *  3
+	//下面的定义与上面的不同
+	#define SIX 2*3
+	```
+	注：如果确实需要重定义常量，使用const关键字和作用域规则可能会更容易。
+
+### 3. 在#define中使用参数
+
+1. 类函数宏：
+	```
+	//定义:SQUARE宏标识符，X宏的参数，X*X替换列表
+	#define SQUARE(X) X*X
+	//上述写法存在缺陷
+	//调用
+	z = SQUARE(2);
+	```
+	注：必须使用足够多的圆括号来保证以正确的顺序进行运算和结合
+	```
+	#define SQUARE(X) ((X) * (X))
+	//如：
+	int x = 4;
+	SQUARE(x+2);
+	100 / SQUARE(2);
+	SQUARE(++x);//这种写法仍然存在缺陷和不确定性
+	```
+	注：避免在宏参数中使用增量或减量运算符。编译器对这些运算顺序没有做出规定。
+	
+2. 利用宏参数创建字符串：**#**运算符
+	```
+	#define PSQR(X) printf("The square of x is %d.\n", ((X) * (X)));
+	//调用
+	PSQR(8);
+	//输出为：The square of x is 64.
+	//引号中的字符串中的x被看作普通文本，而不是被看作一个可被替换的语言符号
+	```
+	注：在类函数宏的替换部分中，**#**符号用作一个预处理运算符，可以把语言符号转化为字符串，该过程称为字符串化。
+	```
+	#define PSQR(X) printf("The square of #x is %d.\n", ((X) * (X)));
+	//调用
+	PSQR(8);
+	//输出为：The square of 8 is 64.
+	```
+
+3. 预处理器的粘合剂：**##**运算符
+**##**运算符可以用于类函数宏的替换部分，也可以用于类对象宏的替换部分。作用：把两个语言符号组合成单个语言符号。
+	
+	```
+	#define XNAME(n) x ## n
+	//宏调用
+	XNAME(4)
+	//展开后：x4
+	```	
+	```
+	#include <stdio.h>
+	#define XNAME(n) x ## n
+	#define PRINT_XN(n) printf("x" #n " = %d\n", x ## n);
+	int main()
+	{
+		int XNAME(1) = 14;//变为 int x1 = 14;
+		int XNAME(2) = 20;//变为 int x2 = 20;
+		PRINT_XN(1);//变为 printf("x1 = %d\n", x1);
+		PRINT_XN(2);//变为 printf("x2 = %d\n", x2);		
+		return 0;
+	}	
+	```
+
+4. 可变宏：**...**和**\__VA_ARGS__**
+有些函数（如printf()）接受可变数量的参数。头文件stdvar.h提供了创建用户自定义的带可变数量参数的函数的工具。实现思想就是宏定义中参数列表的最后一个参数为省略号，预定义宏\__VA_ARGS__就可以被用在替换部分中，以表明省略了什么。
+	
+	```
+	#define PR(...) printf(__VA_ARGS__)
+	//调用
+	PR("Howdy");
+	//__VA_ARGS__展开为一个参数"Howdy"
+	//展开后printf("Howdy");
+	PR("weight = %d, shipping = %.2f\n", wt, sp);
+	//__VA_ARGS__展开为三个参数
+	//展开后printf("weight = %d, shipping = %.2f\n", wt, sp);	
+	```
+	```
+	#include <stdio.h>
+	#include <math.h>
+	#define PR(X, ...) printf("Message " #X ": " __VA_ARGS__)
+	int main(void)
+	{
+		double x = 48;
+		double y;
+		
+		y = sqrt(x);
+		PR(1, "x = %g\n", x);
+		PR(2, "x = %.2f, y = %.4f\n", x, y);
+		
+		return 0;	
+	}
+	```
+	
+### 4. 宏，还是函数
+
+1. 宏在某种程度上比函数复杂。通常，编译器限制宏只能定义成一行。
+
+2. 宏与函数间的选择实际上是时间与空间之间的权衡。宏产生内联代码，在程序中产生语句，重复拷贝。而函数只有一份拷贝，节省了空间，但函数的控制必须转移到函数中并随后返回调用程序，比内联代码耗费时间。
+
+3. 宏的一个优点是不检查其中的变量类型，因为宏处理字符型字符串，而不是实际值。
+
+4. C99提供了第三种方法：内联函数。
+
+### 5. 文件包含：#include
+
+1. **\#include**指令的两种使用形式：
+	```
+	#include <stdio.h>
+	//预处理器在一个或多个标准系统目录中寻找文件。
+	#include "mystuff.h"
+	//预处理器先在当前目录（或文件名中指定的其他目录）中寻找文件，然后在标准系统目录中寻找文件。
+	#include "/usr/biff/p.h"
+	//搜索/usr/biff目录	
+	```
+	注：
+	(1)对于系统头文件，集成开发环境（IDE）具有标准搜索路径。许多IDE提供菜单选项用于指定使用尖括号时搜索的其他路径。对于UNIX，使用双引号时首先搜索本地目录，但是具体搜索哪个目录依赖于编译器。有些编译器搜索源代码文件所在目录，有些搜索当前工作目录，有些搜索工程文件所在目录。
+	(2)包含大型头文件并不一定显著增加程序的大小，通常，头文件中的内容是编译器产生最终代码所需的信息，而不是加到最终代码里的具体语句。
+
+2. 使用const可以避免值被恶意修改。使用static后，每个包含该头文件的文件都获得一份该常量的副本，该变量具有文件作用域，内部链接。而具有文件作用域、外部链接的变量，需要在一个文件中进行定义声明，而在其他文件中进行引用声明。
+	```
+	//可以在包含函数声明的源代码文件中定义一个具有文件作用域、外部链接的变量
+	int status = 0;//文件作用域，外部链接
+	//然后，在与源代码文件相关联的头文件中进行引用声明
+	extern int status;//头文件中
+	```
+
+### 5. 其他指令
+
+1. **#undef**：取消定义一个给定的#define
+	```
+	#define LIMIT 40
+	//取消定义
+	#undef LIMIT
+	//重新定义
+	#define LIMIT 100
+	```
+	注：如果想使用一个特定名字，但又不能确定前面是否已经使用了该名字，为安全起见，可以取消该名字定义。
+
+2. 已定义：C预处理器的观点
+预处理器在预处理指令中遇到标识符时，要么把标识符当作已定义（由预处理器定义）的，要么当作未定义的。如果标识符是该文件前面#define指令创建的宏名，并且没有使用#undef指令关闭该标识符，则标识符是已定义的。如果标识符不是宏，而是一个具有文件作用域的C变量，那么预处理把标识符当作未定义的。
+	
+	```
+	#define LIMIT 1000//LIMIT已定义
+	#define GOOD//GOOD已定义
+	#define A(X) ((-(X)) * (X))//A已定义
+	int q;//q不是一个宏，是未定义的
+	#undef GOOD//GOOD是未定义的
+	```
+	注：#define宏的作用域从文件中的定义点开始，直到用#undef指令取消宏为止，或直到文件尾为止（由二者中最先满足的那个结束宏的作用域）。如果用头文件引入宏，#define在文件中的位置依赖于#include指令的位置
+
+3. 条件编译
+	- **\#ifdef**、**#else**、**#endif**指令：
+	```
+	#ifdef MAVIS
+		#include "horse.h"
+		#define STABLES 5
+	#else
+		#include "cow.h"
+		#define STABLES 15
+	#endif
+	```
+		注：这些条件结构可以嵌套，也可以用这些指令标记C语句块（如使用#ifdef选择适用于不同C实现的大块代码）。如：
+	```
+	#ifdef DEBUG
+		printf("OK!");
+	#endif
+	```
+	- **\#ifndef**指令：#ifndef指令也可以与#else、#endif指令一起使用。#ifndef判断后面的标识符是否为未定义的。如：
+	```
+	#ifndef SIZE
+		#define SIZE 100
+	#endif
+	```
+		注：
+		(1)旧的编译器不允许使用缩排格式的#define指令，必须左对齐。
+		(2)当包含多个头文件时，使用#ifndef可以防止对某个宏重复定义。
+		(3)#ifndef指令通常用于防止多次包含同一文件。
+		```
+		/*  things.h  */
+		#ifndef THINGS_H_
+			#define THINGS_H_
+			/*  头文件其他部分  */
+		#endif			
+		```
+		(4)标准C头文件使用#ifndef技术来避免多次包含。通常用文件名做标识符，并在文件名中使用大写字母、下划线代替文件名中的句点字符、用下划线（可能使用两条下划线）做前缀或后缀。例如：
+		```
+		#ifndef _STDIO_H
+		#define _STDIO_H
+		//文件内容
+		#endif
+		```
+	- **\#if**和**#elif**指令：#if后跟常量整数表达式。如果表达式为非零值，则表达式为真。在该表达式中可以使用C的关系运算符和逻辑运算符。如：
+	```
+	//#if
+	#if SYS == 1
+	#include "ibm.h"
+	#endif
+	//#elif	
+	#if SYS == 1
+		#include "ibmpc.h"
+	#elif SYS == 2
+		#include "vax.h"
+	#elif SYS == 3
+		#include "mac.h"
+	#else
+		#include "general.h"
+	#endif
+	```
+	- **defined**预处理器运算符：如果defined的参数已用#define定义过，那么defined返回1，否则返回0。这种方法可以和#elif一起使用。
+	```
+	#if defined(IBMPC)
+		#include "ibmpc.h"
+	#elif defined(VAX)
+		#include "vax.h"
+	#elif defined(MAC)
+		#incldue "mac.h"
+	#else
+		#include "general.h"
+	#endif
+	```
+		注：条件编译的一个用途是可以使程序更易于移植。
+
+4. 预定义宏
+	- **\__DATA__**：返回预处理的日期（“mm dd yyyy"形式的字符串文字）。
+	- **\__TIME__**：源文件编译时间，格式为"hh:mm:ss"。
+	- **\__FUNC__**：代表函数名的字符串。（**该标识符具有函数作用域，而宏本质上具有文件作用域。因而“\__FUNC__"是C语言的预定义标识符，而不是预定义宏**）
+	- **\__FILE__**：代表当前源文件名的字符串文字。
+	- **\__LINE__**：代表当前源代码文件中的行号的整数常量。
+	- **\__STDC__**：设置为1时，表示该实现遵循C标准。
+	- **\__STDC_HOSTED__**：为本机环境设置为1，否则设置为0。
+	- **\__STDC_VERSION__**：为C99时设置为199901L	
+
+5. **#line**和**#error**
+	- **#line**指令用于重置由**\__LINE__**和**\__FILE__**宏报告的行号和文件名。
+	```
+	#line 1000 //把当前行号重置为1000	
+	#line 10 "cool.c" //把行号重置为10， 文件名重置为cool.c
+	```
+	- **#error**指令使预处理器发出一条错误信息，该消息包含指令中的文本。
+	```
+	#if __STDC_VERSION__ != 199901L
+		#error Not C99
+	#endif
+	```
+
+6. **#pragma**
+	- 在现代编译器中，可用命令行参数或者IDE菜单选项修改编译器的某些设置，也可用#pragma将编译器指令置于源代码中。	
+	```
+	#pragma c9x on //启用对C9X的支持	
+	```
+	- **\_Pragma**预处理器运算符：可将字符串转换成常规的编译指示。
+	```
+	_Pragma("nonstandardtreatmenttypeB on")
+	//等价于
+	#pragma nonstandardtreatmenttypeB on
+	```
+		注：也可将该运算符作为宏展开的一部分
+	```
+	#define PRAGMA(X) _Pragma(#X)
+	//下面用法有缺陷，下面的代码依赖于字符串连接功能，但是直到预处理过程完成后编译器才连接字符串
+	#define LIMRG(X) PRAGMA(STDC CX_LIMITED_RANGE X)
+	```
+
+### 6. 内联函数
+
+1. 使用类函数宏的一个原因就是可减少执行时间。内联函数也可减少函数调用等开销。
+
+2. 把函数变为内联函数将**建议**编译器尽可能快速地调用该函数。但是具体效果由实现来定义，因此使函数变为内联函数可能会简化函数的调用机制（用函数体替换函数调用），也可能不起作用。
+
+3. 创建内联函数的方法是在函数声明中使用函数说明符inline。
+	```
+	#include <stdio.h>
+	inline void eatline()
+	{
+		while (getchar() != '\n')
+		{
+			continue;
+		}
+	}
+	int main(void)
+	{
+		......
+		eatline(); //函数调用
+		......
+	}
+	```
+	注：
+	(1)无法获得内联函数的地址，因为内联函数没有预留的单独代码块。
+	(2)内联函数不会在调试器中显示。
+	(3)内联函数应该短小，对于较长的函数，使用内联函数不会节省太多时间。
+	(4)编译器在优化内联函数时，必须知道函数定义的内容。因此内联函数的定义和对该函数的调用必须在同一个文件中（内联函数通常具有内部链接）。通常，在头文件中定义内联函数，并在使用该函数的文件中包含该头文件。一般不再头文件中放置函数定义，但内联函数是个例外。
+	(5)与C++不同，C允许混合使用内联函数定义和外部函数定义（具有外部链接的函数定义）。
+	(6)C还允许在包含内联函数定义的文件中放置外部函数声明。
+	```
+	//file1b.c
+	......
+	extern double square(double); //把square()声明为外部函数
+	inline double square(double); //把square()声明为内联函数
+	double square(double x) { return x * x;}
+	
+	int main(void)
+	{
+		......
+		double q = square(1.3) + square(1.5);
+		......
+	}
+	//file2b.c
+	extern double square(double);
+	double square(double x) 
+	{
+		int y;
+		y = x * x;
+		return y;
+	}
+	//在file1b.c对square()的调用中，编译器可随意使用该函数的内部定义和外部定义，甚至两次调用所使用的定义可以不一致。
+	```
+
+### 7. C库
+
+1. 头文件提供函数声明或原型，而库选项告诉系统到哪儿寻找函数代码。
+
+2. size_t类型定义为sizeof运算符返回的无符号整数类型，通常为unsigned int或unsigned long。stddef.h文件中包含有size\_t类型的typedef或#define定义。
+
+3. ANSI C使用指向void类型的指针作为通用指针。需要使用指向不同类型的指针时，可采用void指针。
+
+### 8. 数学库
+
+1. math.h提供这些数学函数的函数声明或原型。如：
+	```
+	double ceil (double x);//向上取整，返回不小于x的最小整数值
+	double floor (double x);//向下取整， 返回不大于x的最大整数值
+	```
+	注：UNIX/Linux系统要求使用**"-lm"**标记以指示连接器搜索数学库。
+
+### 9. 通用工具库
+
+1. 通用工具库包含各种函数：随机数产生函数、搜索和排序函数、转换函数和内存管理函数。这些函数的原型在头文件**stdlib.h**中。
+
+2. **exit()**和**atexit()**函数：
+	- **atexit()**函数：只需把要调用的函数地址（函数指针）传递给atexit()。atexit()把作为其参数的函数在调用exit()时执行的函数列表中进行注册。ANSI保证该列表至少可放置32个函数。最优调用exit()函数时，按后进先出的顺序执行这些函数。
+	注：由atexit()注册的函数类型为无参的void函数（通常它们执行内部处理任务，如更新程序监视文件或重置环境变量）。
+	- **exit()**函数：exit()函数执行了atexit()指定的函数后，会做一些自身清理巩固总。它会刷新所有输出流、关闭所有的流，并关闭通过调用标准I/O函数tmpfile()创建的临时文件，最后把控制返回给主机环境，向主机环境报告终止状态（**EXIT_SUCCESS**(0)表示成功终止，**EXIT_FAILURE**(非0)表示失败）。
+
+3. **qsort()**函数：对数据对象数组进行排序。
+	```
+	void qsort (void *base, size_t nmemb, size_t size, int (*compar) (const void *, const void *));//函数原型
+	```
+
+4. **C**和**C++**中的**void \***
+C和C++对待void类型的指针是不同的。都可以把一个指向任意类型的指针赋给类型**void \***。但是在把一个**void \***指针赋给一个指针或者另一个类型的时候，C++需要一次强制类型转换，而C没有这个要求。
+
+	```
+	const double * a1 = (const double *) p1;
+	```
+
+### 10. 诊断库
+
+1. 由头文件**assert.h**支持的诊断库用于辅助调试程序，由宏**assert()**构成，该宏接受整数表达式作为参数。
+	- 如果表达式值为假（非零），宏**assert()**向标准错误流（stderr）写入一条错误消息并调用abort()函数终止程序。
+	- **assert()**宏的作用：标识出程序中某个条件应为真的关键位置，并在条件为假时用**assert()**语句终止该程序。通常，**assert()**的参数为关系或逻辑表达式。如果**assert()**终止程序，首先会显示失败的判断、包含该判断的文件名和行号。**assert()**能自动识别文件，并自动识别发生问题的行号。
+
+2. 无需改变代码就能开启或禁用**assert()**宏的机制：
+在**assert.h**包含语句所在位置前添加宏定义**#define NDEBUG**，并重新编译程序。编译器将禁止文件中所有的**assert()**语句。如果程序出现问题，可以去除**#define NDEBUG**指令重新编译，重新启用**assert()**语句。
+
+### 11. **memcpy()**和 **memmove()**
+
+1. 不能把一个数组的值直接赋给另一个数组，但是**memcpy()**和**memmove()**函数能方便地复制数组。	
+	
+	```
+	void *memcpy (void * restrict s1, const void * restrict s2, size_t n);
+	void *memmove (void * s1, const void * s2, size_t n);
+	```
+	注：
+	(1)两个函数均从s2指向位置复制n字节数据到s1指向的位置，且均返回s1的值。
+	(2)两者差别：由关键字**restrict**造成，**memcpy()**可以假定两个内存区域之间没有重叠。**memmove()**函数则不作这个假定。**使用memcpy()时，必须确保源、目的内存没有重叠区域**
+
+### 12. 可变参数：**stdargs.h**
+
+1. 使用方法：
+	- 在函数原型中使用省略号。
+	```
+	void f1(int n, ...);
+	int f2(int n, const char * s, ...);
+	char f3 (char c1, ..., char c2); //无效
+	double f3(); //无效
+	```
+		注：可变函数参数列表最右边的参量有特殊作用（ANSI标准用parmN表示该参量），该参量的实际参数值将是省略号部分代表的参数个数。
+	- 在函数定义中创建一个**va_list**类型的变量。可变函数定义的起始部分如下：	
+	```
+	double sum (int lim, ...)
+	{
+		va_list ap; //声明用于存放参数的变量
+		......
+	}
+	//lim用来指定可变参数列表中的参数个数
+	```
+		注：头文件**stdargs.h**中声明的**va_list**类型代表一种数据对象，该数据对象用于存放参量列表中省略号部分代表的参量。
+	- 用宏将该变量初始化为一个参数列表。使用**stdargs.h**中定义的宏**va_start()**把参数列表复制到**va_list**变量中。
+	```
+	va_start (ap, lim); //把ap初始化为参数列表
+	```
+		注：宏**va_start()**有两个参数，**va_list**类型的变量和参量**parmN**。
+	- 用宏访问这个参数列表。使用宏**va_arg()**。
+	```
+	double tic;
+	int toc;
+	......
+	tic = va_arg(ap, double); //取得第一个参数
+	toc = va_arg(ap, int); //取得第二个参数
+	```
+		注：
+		(1)宏**va_art()**接受两个参数，**va_list**类型的变量和一个类型名。第一次调用**va_arg()**，返回参数列表的第一项，下次调用返回第二项，类型参数指定返回值的类型。
+		(2)传入实际参数的类型必须与说明的类型相匹配，不会像赋值过程中一样类型自动转换。
+	- 用宏完成清理工作。使用宏**va_end()**。
+	```
+	va_end(ap);//该宏接受一个va_list变量作为参数
+	```
+
+4. **va_arg()**不提供后退回先前参数的方法，所以保存**va_list**变量的副本会是有用的。可使用**va_copy()**。
+	```
+	va_list ap;
+	va_list apcopy;
+	double tic;
+	int toc;
+	......
+	va_start(ap, lim);
+	va_copy(apcopy, ap);
+	tic = va_arg(ap, double);
+	toc = va_arg(ap, int);
+	//此时，虽然已从ap中删除了前面两项，但还可以从apcopy中重新获取这两项
+	```
+
+## 第17章 高级数据表示
+
+### 1. 抽象数据类型（**ADT**）
+
+1. 一个类型指定两类信息：一个属性集和一个操作集。
+
+2. 定义新类型的方法：
+	- 为类型的属性和可对类型执行的操作提供一个抽象的描述，称为**抽象数据类型（ADT）**。
+	- 开发一个实现该ADT的编程接口。说明如何存储数据并描述用于执行所需操作的函数集合。
+	- 编写代码实现这个接口。
+
+3. 接口有两个部分：第一部分描述数据如何表示，第二部分描述实现ADT操作的函数。
+
+4. 内部链接函数只在定义它的文件中可见。
+
+5. 对于链表而言，列表的大小受可用内存数量限制。可以尝试为一个新节点分配内存（仅限于测试是否有可用内存），如果分配失败，则列表已满；如果分配成功，表示列表未满，释放刚刚分配的内存。
+
+6. 数据隐藏：把实现和最终接口相隔离。
+
+### 2. 链表与数组
+
+1. 在链表中不能使用折半搜索。
+
+2. 选择何种数据类型是取决于具体问题的。
+	- 链表更适合于需要频繁地插入和删除元素，不断调整大小，并且不需要经常搜索的情形。
+	- 数组更适合于只是偶尔插入或删除一些元素，但却需要经常搜索的情形。
+
+### 3. 二叉搜索树
+
+1. 二叉搜索树中元素唯一，不含有相同的元素。插入前要检查二叉搜索树中是否已存在待插入元素。
+
+2. 二叉搜索树删除一个节点时，分三种情况：
+	- 无左子节点的节点（无子节点的节点可以作为无左子节点的特例）。
+	- 无右子节点的节点。
+	- 有两个子节点的节点。
+	
+	```
+	static void DeleteNode(Node **ptr)
+	{
+		Node * temp;
+		
+		puts((*ptr)->item.petname);
+		if ((*ptr)->left == NULL)
+		{
+			temp = *ptr;
+			*ptr = (*ptr)->right;
+			free(temp);
+		}
+		else if ((*ptr)->right == NULL)
+		{
+			temp = *ptr;
+			*ptr = (*ptr)->left;
+			free(temp);
+		}
+		else //被删除节点有两个子节点
+		{
+			//找到右子树的依附位置，即待删除节点左子树的最右边的叶节点
+			for (temp = (*ptr)->left; temp->right != NULL; temp = temp->right)
+			{
+				continue;
+			}
+			temp->right = (*ptr)->right;
+			temp = *ptr;
+			*ptr = (*ptr)->left;
+			free(temp);
+		}
+	}
+	```
+
+3. 遍历树：
+	```
+	void Traverse (const Tree * ptree, void (* pfun) (Item item))
+	{
+		if (ptree != NULL)
+		{
+			InOrder(ptree->root, pfun);
+		}
+	}
+	static void  InOrder (const Node * root, void (* pfun) (Item item))
+	{
+		if (root != NULL)
+		{
+			InOrder(root->left, pfun);
+			(*pfun)(root->item);
+			InOrder(root->right, pfun);
+		}
+	}
+	```
+
+4. 删除树：
+	```
+	void DeleteAll (Tree * ptree)
+	{
+		if (ptree != NULL)
+		{
+			DeleteAllNodes(ptree->root);
+		}
+		ptree->root = NULL;
+		ptree->size = 0;
+	}
+	static void DeleteAllNodes (Node * root)
+	{
+		Node * pright;
+		if (root != NULL)
+		{
+			pright = root->right;
+			DeleteAllNodes(root->left);
+			free(root);
+			DeleteAllNodes(pright);
+		}
+	}
+	```
