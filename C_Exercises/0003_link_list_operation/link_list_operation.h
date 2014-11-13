@@ -10,53 +10,63 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-#define OK 1;
-#define ERROR 0;
+/**************数据类型定义**************/
 
-typedef int Status;
-typedef int ElemType;
+typedef int Item;
 
-typedef struct Node
+typedef struct node
 {
-	ElemType data;
-	struct Node *next;
-} LNode, *Link;
+	Item item;
+	struct node * next;
+} Node;
 
-typedef struct
+typedef struct list
 {
-	Link head;
+	Node * head;
 	int len;
-} LinkList;
+} List;
+
+/***********函数原型声明***************/
 
 //初始化一个带头结点的单链表
-Status InitList(LinkList *L);
+void Initialize(List * plist);
+
+//判断单链表是否为空
+bool IsEmpty(const List * plist);
+
+//判断单链表是否已满
+bool IsFull(const List * plist);
+
+//确定单链表元素个数
+unsigned int ItemCount(const List * plist);
+
+//采用头插法在单链表头部插入一个项目
+bool AddItemHead(Item item, List * plist);
+
+//采用尾插法在单链表尾部插入一个项目
+bool AddItemTail(Item item, List * plist);
+
 //释放一个结点
-void FreeNode(LNode *p);
-//清空单链表数据结点
-Status ClearList(LinkList *L);
+void FreeNode(Node * node);
+
+//清空单链表中项目
+bool ClearList(List * plist);
+
 //销毁单链表
-Status DestroyList(LinkList *L);
-//打印单链表
-void Display(LinkList *L);
-//采用头插法在单链表头部插入一个数据结点
-Status InsFirst(LinkList *L, ElemType e);
-//删除第一个数据结点
-Status DelFirst(LinkList *L);
-//在单链表结尾追加结点
-Status Append(LinkList *L, ElemType e);
-//从单链表中删除首次匹配的指定结点
-Status Remove(LinkList *L, ElemType e);
-/*
-Status InsBefore(LinkList *L, int i, ElemType e);
-Status InsAfter(LinkList * L, int i, ElemType e);
-Status IsEmpty(LinkList L);
-int Length(LinkList L);
-LNode * GetHead(LinkList L);
-LNode * GetLast(LinkList L);
-LNode * PriorPos(LinkList L, Link p);
-LNode * NextPos(LinkList L, Link p);
-Status LocateElem(LinkList L, ElemType e, Status (* compare)(ElemType, ElemType));
-Status Traverse(LinkList L, Status (* visit)());
-*/
+bool DestroyList(List * plist);
+
+//打印项目信息
+void DisplayItem(Item * item);
+
+//删除第一个项目
+bool DeleteFirstItem(List * plist);
+
+//删除最后一个项目
+bool DeleteLastItem(List * plist);
+
+//从单链表中删除首次匹配的指定项目
+bool Remove(Item item, List * plist);
+
 #endif
