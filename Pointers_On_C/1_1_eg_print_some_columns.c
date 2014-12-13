@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: eg_1_1_print_some_col.c
+	> File Name: 1_1_eg_print_some_columns.c
 	> Author: Hui Wang
 	> Mail: ncepuwanghui@gmail.com 
 	> Created Time: Sat 13 Dec 2014 09:06:56 AM CST
