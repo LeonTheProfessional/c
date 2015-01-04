@@ -8,6 +8,9 @@
 #ifndef EXPRESSION_EVALUATION_H_
 #define EXPRESSION_EVALUATION_H_
 
+#define MAX_LEN 100
+#define OP_NUM 10
+
 //获取操作符的优先级
 int priority(char left, char right);
 
