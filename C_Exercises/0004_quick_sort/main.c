@@ -71,7 +71,7 @@ static void get_input_item(int * item)
 static void print_array_item(int * item)
 {
     static int cnt = 0;
-    printf("%d ", *item);
+    printf("%2d ", *item);
     cnt++;
     if (cnt % 10 == 0) {
         printf("\n");

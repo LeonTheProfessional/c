@@ -14,4 +14,4 @@ void traverse_array(int arr[], const int len, void (*pfun)(int * item));
 //采用快排算法对数组排序
 void quick_sort(int arr[], int low, int high);
 
-#endif;
+#endif
