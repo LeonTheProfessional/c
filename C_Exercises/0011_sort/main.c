@@ -1,8 +1,8 @@
 /*************************************************************************
-	> File Name: main.c
-	> Author: Hui Wang
-	> Mail: ncepuwanghui@gmail.com 
-	> Created Time: Fri 09 Jan 2015 10:09:33 PM CST
+  > File Name: main.c
+  > Author: Hui Wang
+  > Mail: ncepuwanghui@gmail.com 
+  > Created Time: Fri 09 Jan 2015 10:09:33 PM CST
  ************************************************************************/
 
 #include "sort.h"
@@ -12,7 +12,6 @@
 #include <string.h>
 #include <assert.h>
 
-#define MAX_NUM 100
 #define IN_FILE "input.dat"
 #define OUT_FILE "output.dat"
 
@@ -29,26 +28,72 @@ int main(void)
 {
     FILE * fp_in, * fp_out;
     int * a;
+    int flag;
+    int num;
+    int ch;
+
+    printf("Array Size:");
+    while (scanf("%d", &num) != 1 || num <= 0)
+    {
+        while ((ch = getchar()) != '\n' && ch != EOF)
+        {
+            ;
+        }
+        printf("Incorrect input! Try again!\n");
+    }
 
     open_file(&fp_in, IN_FILE, "wb");
-    generate_file(fp_in, MAX_NUM);
+    generate_file(fp_in, num);
     fclose(fp_in);
 
-    a = (int *) malloc(sizeof(int) * MAX_NUM);
-    memset(a, 0, (sizeof(int) * MAX_NUM));
+    a = (int *) malloc(sizeof(int) * num);
+    memset(a, 0, (sizeof(int) * num));
     open_file(&fp_in, IN_FILE, "rb");
-    read_file(fp_in, a, MAX_NUM);
+    read_file(fp_in, a, num);
     fclose(fp_in);
 
-    quick_sort(a, MAX_NUM);
-    //bubble_sort(a, MAX_NUM);
-    //direct_insert_sort(a, MAX_NUM);
-    //heap_sort(a, MAX_NUM);
-    //counting_sort(a, MAX_NUM);
-    
+    printf("Please choose a algorithm to sort:\n");
+    printf("1.Quick Sort Algorithm\n");
+    printf("2.Bubble Sort Algorithm\n");
+    printf("3.Direct Insert Sort Algorithm\n");
+    printf("4.Select Sort Algorithm\n");
+    printf("5.Heap Sort Algorithm\n");
+    printf("6.Counting Sort Algorithm\n");
+
+    while (scanf("%d", &flag) != 1 || flag < 1 || flag > 6)
+    {
+        while ((ch = getchar()) != '\n' && ch != EOF)
+        {
+            ;
+        }
+        printf("Incorrect input! Try again!\n");
+    }
+    switch (flag)
+    {
+        case 1:
+            quick_sort(a, num);
+            break;
+        case 2: 
+            bubble_sort(a, num);
+            break;
+        case 3:
+            direct_insert_sort(a, num);
+            break;
+        case 4:
+            select_sort(a, num);
+            break;
+        case 5:
+            heap_sort(a, num);
+            break;
+        case 6:
+            counting_sort(a, num);
+            break;
+        default:
+            quick_sort(a, num);
+    }
 
     open_file(&fp_out, OUT_FILE, "wb");
-    write_file(fp_out, a, MAX_NUM);
+    write_file(fp_out, a, num);
     fclose(fp_out);
 
     return 0;
@@ -80,7 +125,7 @@ void generate_file(FILE * fp, int num)
 void write_file(FILE * fp, const int * a, int len)
 {
     int i;
-    
+
     for (i = 0; i < len; ++i)
     {
         fprintf(fp, "%d\t", a[i]);
@@ -90,7 +135,7 @@ void write_file(FILE * fp, const int * a, int len)
 void read_file(FILE * fp, int * a, int len)
 {
     int i;
-    
+
     for (i = 0; i < len; ++i)
     {
         fscanf(fp, "%d\t", &a[i]);

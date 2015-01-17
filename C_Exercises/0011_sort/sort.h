@@ -19,6 +19,9 @@ void bubble_sort(int * a, int len);
 //直接插入排序
 void direct_insert_sort(int * a, int len);
 
+//选择排序
+void select_sort(int * a, int len);
+
 //堆排序
 void heap_sort(int * a, int len);
 

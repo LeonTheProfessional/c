@@ -16,8 +16,9 @@ static void swap(int * a, int * b);
 static int partition(int * a, int low, int high);
 //采用传入区间的方法排序
 static void quick_sort_by_partition(int * a, int low, int high);
-//建堆
+//调整堆
 static void sift(int * a, int low, int high);
+static void heap_adjust(int * a, int i, int heap_size);
 
 //快速排序
 void quick_sort(int * a, int len)
@@ -66,6 +67,28 @@ void direct_insert_sort(int * a, int len)
     }
 }
 
+//选择排序
+void select_sort(int * a, int len)
+{
+    int i, j, min;
+
+    for (i = 0;i < len; ++i)
+    {
+        min = i;
+        for (j = i + 1; j < len; ++j)
+        {
+            if (a[j] < a[min])
+            {
+                min = j;
+            }
+        }
+        if (min != i)
+        {
+            swap(&a[i], &a[min]);
+        }
+    }
+}
+
 //堆排序
 void heap_sort(int * a, int len)
 {
@@ -73,12 +96,14 @@ void heap_sort(int * a, int len)
 
     for (i = len / 2; i >= 0; --i)
     {
-        sift(a, i, len - 1);
+        //sift(a, i, len - 1);
+        heap_adjust(a, i, len - 1);
     }
     for (i = len - 1; i >= 1; --i)
     {
         swap(&a[0], &a[i]);
-        sift(a, 0, i - 1);
+        //sift(a, 0, i - 1);
+        heap_adjust(a, 0, i - 1);
     }
 }
 
@@ -177,4 +202,29 @@ void sift(int * a, int low, int high)
         }
     }
     a[i] = temp;
+}
+
+void heap_adjust(int * a, int i, int heap_size)
+{
+    int largest = 0;
+    int left = 2 * i;
+    int right = left + 1;
+
+    if (left <= heap_size && a[left] > a[i])
+    {
+        largest = left;
+    }
+    else
+    {
+        largest = i;
+    }
+    if (right <= heap_size && a[right] > a[largest])
+    {
+        largest = right;
+    }
+    if (largest != i)
+    {
+        swap(&a[largest], &a[i]);
+        heap_adjust(a, largest, heap_size);
+    }
 }
