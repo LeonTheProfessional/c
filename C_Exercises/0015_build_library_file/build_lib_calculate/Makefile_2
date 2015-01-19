@@ -1,0 +1,12 @@
+OBJS:=main.o calculate.o
+CC:=gcc
+calculate:$(OBJS)
+	$(CC) -o $@ $^ 
+main.o:main.c
+	$(CC) -o $@ -c $^
+calculate.o:calculate.c
+	$(CC) -o $@ -c $^
+.PHONY:clean rebuild
+rebuild:clean calculate
+clean:
+	rm -rf calculate $(OBJS)

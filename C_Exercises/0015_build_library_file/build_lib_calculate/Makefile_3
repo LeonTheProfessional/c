@@ -1,0 +1,10 @@
+OBJS:=main.o calculate.o
+CFLAGS:=-Wall -O2 -g
+calculate:$(OBJS)
+	gcc $^ -o $@
+%.o:%.c
+	gcc -o $@ -c $^
+.PHONY:clean rebuild
+rebuild:clean calculate
+clean:
+	rm -rf calculate $(OBJS)

@@ -4,10 +4,10 @@
 	> Mail: ncepuwanghui@gmail.com 
 	> Created Time: Fri 24 Oct 2014 12:33:06 AM CST
  ************************************************************************/
-
+#include <stdio.h>
 #include "matrix_operation.h"
 
-int main(int argc, char const * argv[])
+int main(void)
 {
 	int a[MAX_ROW_NUM][MAX_COL_NUM];
 	int b[MAX_ROW_NUM][MAX_COL_NUM];

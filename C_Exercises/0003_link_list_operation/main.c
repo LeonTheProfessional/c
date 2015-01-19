@@ -5,14 +5,15 @@
 	> Created Time: Fri 24 Oct 2014 11:31:10 PM CST
  ************************************************************************/
 
+#include <stdio.h>
 #include "link_list_operation.h"
 
 //打印项目信息
-static void DisplayItem(const Item item);
+static void DisplayItem(Item item);
 //清理缓冲区剩余字符
 static void ClearBuffer();
 
-int main(int argc, char * argv[])
+int main(void)
 {
 	List list;
     Item item;
@@ -66,13 +67,13 @@ int main(int argc, char * argv[])
 }
 
 //打印项目信息
-static void DisplayItem(const Item item)
+void DisplayItem(Item item)
 {
     printf("%d\t", item);
 }
 
 //清理缓冲区剩余字符
-static void ClearBuffer()
+void ClearBuffer()
 {
     int c;
     do {

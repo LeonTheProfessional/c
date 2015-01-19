@@ -5,10 +5,9 @@
   > Created Time: Fri 24 Oct 2014 12:24:56 AM CST
  ************************************************************************/
 
-#ifndef __MATRIX_OPERATION_H__
-#define __MATRIX_OPERATION_H__
+#ifndef MATRIX_OPERATION_H
+#define MATRIX_OPERATION_H
 
-#include <stdio.h>
 #define MAX_ROW_NUM 10
 #define MAX_COL_NUM 10
 

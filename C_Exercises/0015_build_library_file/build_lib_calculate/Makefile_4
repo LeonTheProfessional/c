@@ -1,0 +1,21 @@
+OBJS:=main.o calculate.o
+EXE:=calculate
+CFLAGS:=-Wall -O2 -fPIC
+LIBCALSO:=libcal.so
+LIBCALA:=libcal.a
+$(EXE):$(OBJS) $(LIBCALSO) $(LIBCALA)
+	gcc -o $@ $< -L. -lcal
+main.o:main.c
+	gcc -o $@ -c $(CFLAGS) $< 
+calculate.o:calculate.c
+	gcc -o $@ -c $(CFLAGS) $<
+libcal.a:calculate.o
+	ar crsv $@ $<
+libcal.so:calculate.o
+	gcc -shared -o $@ $<
+	sudo cp -f $@ /usr/lib
+.PHONY:rebuild clean
+rebuild: clean $(EXE)
+clean:
+	rm -rf $(EXE) $(OBJS) $(LIBCALSO) $(LIBCALA)
+	sudo rm /usr/lib/$(LIBCALSO)

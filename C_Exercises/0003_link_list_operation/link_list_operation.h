@@ -5,11 +5,9 @@
     > Created Time: Fri 24 Oct 2014 11:29:06 PM CST
  ************************************************************************/
 
-#ifndef __LINK_LIST_OPERATION_H__
-#define __LINK_LIST_OPERATION_H__
+#ifndef LINK_LIST_OPERATION_H
+#define LINK_LIST_OPERATION_H
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 
 /**************数据类型定义**************/

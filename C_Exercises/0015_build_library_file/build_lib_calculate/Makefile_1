@@ -1,0 +1,10 @@
+OBJS:=main.o calculate.o
+EXE:=calculate
+$(EXE):$(OBJS)
+	gcc -o $(EXE) $(OBJS)
+main.o:main.c
+	gcc -o main.o -c main.c
+calculate.o:calculate.c
+	gcc -o calculate.o -c calculate.c
+clean:
+	rm -rf $(EXE) $(OBJS)

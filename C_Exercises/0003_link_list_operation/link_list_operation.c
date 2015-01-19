@@ -5,6 +5,7 @@
 	> Created Time: Fri 24 Oct 2014 11:29:57 PM CST
  ************************************************************************/
 
+#include <stdlib.h>
 #include "link_list_operation.h"
 
 //初始化一个带头结点的单链表

@@ -10,7 +10,9 @@
 
 #define MAX 128
 
+
 char * strstr(const char *string, const char *charset);
+static void delete_last_line_break(char *string);
 
 int main(void)
 {
@@ -20,8 +22,10 @@ int main(void)
 
     printf("Input source string:\n");
     fgets(string, MAX, stdin);
+    delete_last_line_break(string);
     printf("Input charset:\n");
     fgets(charset, MAX, stdin);
+    delete_last_line_break(charset);;
     index = strstr(string, charset);
     if (index != NULL)
     {
@@ -73,4 +77,22 @@ char * strstr(const char *string, const char *charset)
     }
 
     return NULL;
+}
+
+void delete_last_line_break(char *string)
+{
+   char *cur = string; 
+
+   if (cur != NULL && *cur != '\0')
+   {
+       while (*cur != '\n' && *cur != '\0')
+       {
+           ++cur;
+       }
+       if (*cur == '\n')
+       {
+           --cur;
+           *cur = '\0';
+       }
+   }
 }

@@ -5,17 +5,22 @@
 	> Created Time: Fri 24 Oct 2014 12:27:53 AM CST
  ************************************************************************/
 
+#include <stdio.h>
 #include "matrix_operation.h"
+
+static void swap(int *a, int *b);
 
 int matrix_multiplication(int a[][MAX_COL_NUM], int ra, int ca, 
         int b[][MAX_COL_NUM], int rb, int cb, 
         int c[][MAX_COL_NUM], int * rc, int * cc)
 {
-	int i = 0, j = 0, k = 0;
+	int i, j, k;
+
 	if (ca != rb)
 	{
 		return -1;
 	}
+
 	for (i = 0; i < ra; ++i)
 	{
 		for (j = 0; j < cb; ++j)
@@ -29,20 +34,14 @@ int matrix_multiplication(int a[][MAX_COL_NUM], int ra, int ca,
 	}
 	*rc = ra;
 	*cc = cb;
-	return 0;
-}
 
-void swap(int * a, int * b)
-{
-	int temp;
-	temp = *a;
-	*a = *b;
-	*b = temp;
+	return 0;
 }
 
 void matrix_transposition(int a[][MAX_COL_NUM], int dim)
 {
 	int i, j;
+
 	for (i = 0; i < dim; ++i)
 	{
 		for (j = 0; j < i; ++j)
@@ -55,7 +54,8 @@ void matrix_transposition(int a[][MAX_COL_NUM], int dim)
 void input_matrix(int a[][MAX_COL_NUM], int *ra, int * ca)
 {
 	int row, col;
-	int i = 0, j = 0;
+	int i, j;
+
 	printf("Row number of matrix: ");
 	scanf("%d", &row);
 	printf("Col number of matrix: ");
@@ -75,6 +75,7 @@ void input_matrix(int a[][MAX_COL_NUM], int *ra, int * ca)
 void print_matrix(int a[][MAX_COL_NUM], int ra, int ca)
 {
 	int i, j;
+
 	for (i = 0; i < ra; ++i)
 	{
 		for (j = 0; j < ca; ++j)
@@ -83,4 +84,12 @@ void print_matrix(int a[][MAX_COL_NUM], int ra, int ca)
 		}
 		printf("\n");
 	}
+}
+
+void swap(int * a, int * b)
+{
+	int temp;
+	temp = *a;
+	*a = *b;
+	*b = temp;
 }
