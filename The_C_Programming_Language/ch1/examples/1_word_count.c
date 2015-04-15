@@ -1,9 +1,9 @@
 /*************************************************************************
-	> File Name: 1_3_word_count.c
+	> File Name: 1_word_count.c
 	> Author: Sam Wong
 	> Mail: ncepuwanghui@gmail.com
 	> Blog: http://samwong.im
-	> Description: count characters, words, and lines
+	> Description: 统计输入的行数、单词数与字符数 
 	> Created Time: Thu 02 Apr 2015 11:21:33 PM CST
  ************************************************************************/
 

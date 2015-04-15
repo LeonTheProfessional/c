@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: 1_2_remove_extra_blanks.c
+	> File Name: 1_9_remove_extra_blanks.c
 	> Author: Sam Wong
 	> Mail: ncepuwanghui@gmail.com
 	> Blog: http://samwong.im
@@ -8,6 +8,7 @@
  ************************************************************************/
 
 #include <stdio.h>
+
 #define NONBLANK 'A'
 
 int main(void)

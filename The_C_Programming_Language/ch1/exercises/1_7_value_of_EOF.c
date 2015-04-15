@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: 1_1_value_of_EOF.c
+	> File Name: 1_7_value_of_EOF.c
 	> Author: Sam Wong
 	> Mail: ncepuwanghui@gmail.com
 	> Blog: http://samwong.im
